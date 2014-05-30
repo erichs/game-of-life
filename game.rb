@@ -10,7 +10,8 @@ class Grid
   def initialize columns, rows, file=nil
     @columns = columns
     @rows    = rows
-    @grid    = build_grid file
+    @grid    = populate_from_file file
+    introduce_neighbors!
   end
 
   def display
@@ -26,58 +27,68 @@ class Grid
   def next!
     @grid.each do |row|
       row.each do |cell|
-        cell.mutate!
+        cell.prepare_to_mutate
       end
     end
 
     @grid.each do |row|
       row.each do |cell|
-        cell.enforce!
+        cell.mutate!
       end
     end
   end
 
   private
-    def build_grid file
-      grid = []
-      if File.exist? file.to_s
-        File.read(file).split("\n").each do |row|
-          grid << row.split(//).map{|state| Cell.new(state)}
-        end
-      else
-        @rows.times.each do |row|
-          grid << @columns.times.map {|x| Cell.new('.')}
+
+    def populate_from_file( file )
+      [].tap do |grid|
+        if File.exist? file.to_s
+          File.read(file).split("\n").each do |row|
+            grid << row.split(//).map{|state| Cell.new(state)}
+          end
+        else
+          @rows.times.each do |row|
+            grid << @columns.times.map {|x| Cell.new('.')}
+          end
         end
       end
-      grid.each_with_index do |row, row_idx|
+    end
+
+    def each_cell_with_indexes
+      @grid.each_with_index do |row, row_idx|
         row.each_with_index do |cell, col_idx|
-          if row_idx > 0
-            cell.neighbors << grid[row_idx - 1][col_idx]       # top neighbor
-            if col_idx > 0
-              cell.neighbors << grid[row_idx - 1][col_idx - 1] # top-left neighbor
-            end
-            if col_idx < @columns - 1
-              cell.neighbors << grid[row_idx - 1][col_idx + 1] # top-right neighbor
-            end
-          end
+          yield cell, row_idx, col_idx
+        end
+      end
+    end
+
+    def introduce_neighbors!
+      each_cell_with_indexes do |cell, row_idx, col_idx|
+        if row_idx > 0
+          cell.neighbors << @grid[row_idx - 1][col_idx]       # top neighbor
           if col_idx > 0
-            cell.neighbors << grid[row_idx][col_idx - 1]       # left neighbor
+            cell.neighbors << @grid[row_idx - 1][col_idx - 1] # top-left neighbor
           end
           if col_idx < @columns - 1
-            cell.neighbors << grid[row_idx][col_idx + 1]       # right neighbor
+            cell.neighbors << @grid[row_idx - 1][col_idx + 1] # top-right neighbor
           end
-          if row_idx < @rows - 1
-            cell.neighbors << grid[row_idx + 1][col_idx]       # bottom neighbor
-            if col_idx > 0
-              cell.neighbors << grid[row_idx + 1][col_idx - 1] # bottom-left neighbor
-            end
-            if col_idx < @columns - 1
-              cell.neighbors << grid[row_idx + 1][col_idx + 1] # bottom-right neighbor
-            end
+        end
+        if col_idx > 0
+          cell.neighbors << @grid[row_idx][col_idx - 1]       # left neighbor
+        end
+        if col_idx < @columns - 1
+          cell.neighbors << @grid[row_idx][col_idx + 1]       # right neighbor
+        end
+        if row_idx < @rows - 1
+          cell.neighbors << @grid[row_idx + 1][col_idx]       # bottom neighbor
+          if col_idx > 0
+            cell.neighbors << @grid[row_idx + 1][col_idx - 1] # bottom-left neighbor
+          end
+          if col_idx < @columns - 1
+            cell.neighbors << @grid[row_idx + 1][col_idx + 1] # bottom-right neighbor
           end
         end
       end
-      grid
     end
 end
 
@@ -94,13 +105,13 @@ class Cell
     @alive
   end
 
-  def mutate!
+  def prepare_to_mutate
     die_if_underpopulated
     die_if_overpopulated
     revive_if_born
   end
 
-  def enforce!
+  def mutate!
     @alive = @next_state
   end
 
