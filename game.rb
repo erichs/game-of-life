@@ -10,7 +10,7 @@ class Grid
   def initialize columns, rows, file=nil
     @columns = columns
     @rows    = rows
-    @grid    = populate_from_file file
+    @grid    = populate_from file
     introduce_neighbors!
   end
 
@@ -20,27 +20,19 @@ class Grid
     }.join("\n")
   end
 
-  def meaning
-    42
-  end
-
   def next!
-    @grid.each do |row|
-      row.each do |cell|
-        cell.prepare_to_mutate
-      end
+    each_cell do |cell|
+      cell.prepare_to_mutate
     end
 
-    @grid.each do |row|
-      row.each do |cell|
-        cell.mutate!
-      end
+    each_cell do |cell|
+      cell.mutate!
     end
   end
 
   private
 
-    def populate_from_file( file )
+    def populate_from( file )
       [].tap do |grid|
         if File.exist? file.to_s
           File.read(file).split("\n").each do |row|
@@ -54,6 +46,14 @@ class Grid
       end
     end
 
+    def each_cell
+      @grid.each do |row|
+        row.each do |cell|
+          yield cell
+        end
+      end
+    end
+
     def each_cell_with_indexes
       @grid.each_with_index do |row, row_idx|
         row.each_with_index do |cell, col_idx|
@@ -62,32 +62,48 @@ class Grid
       end
     end
 
+    def add_top_neighbor(cell, row_idx, col_idx)
+      (cell.neighbors << @grid[row_idx - 1][col_idx]) if row_idx > 0
+    end
+
+    def add_top_left_neighbor(cell, row_idx, col_idx)
+      (cell.neighbors << @grid[row_idx - 1][col_idx - 1]) if row_idx > 0 && col_idx > 0
+    end
+
+    def add_top_right_neighbor(cell, row_idx, col_idx)
+      (cell.neighbors << @grid[row_idx - 1][col_idx + 1]) if row_idx > 0 && col_idx < (@columns - 1)
+    end
+
+    def add_left_neighbor(cell, row_idx, col_idx)
+      (cell.neighbors << @grid[row_idx][col_idx - 1]) if col_idx > 0
+    end
+
+    def add_right_neighbor(cell, row_idx, col_idx)
+      (cell.neighbors << @grid[row_idx][col_idx + 1]) if col_idx < @columns - 1
+    end
+
+    def add_bottom_neighbor(cell, row_idx, col_idx)
+      (cell.neighbors << @grid[row_idx + 1][col_idx]) if row_idx < @rows - 1
+    end
+
+    def add_bottom_right_neighbor(cell, row_idx, col_idx)
+      (cell.neighbors << @grid[row_idx + 1][col_idx + 1]) if row_idx < (@rows - 1) && col_idx < (@columns - 1)
+    end
+
+    def add_bottom_left_neighbor(cell, row_idx, col_idx)
+      (cell.neighbors << @grid[row_idx + 1][col_idx - 1]) if row_idx < (@rows - 1) && col_idx > 0
+    end
+
     def introduce_neighbors!
       each_cell_with_indexes do |cell, row_idx, col_idx|
-        if row_idx > 0
-          cell.neighbors << @grid[row_idx - 1][col_idx]       # top neighbor
-          if col_idx > 0
-            cell.neighbors << @grid[row_idx - 1][col_idx - 1] # top-left neighbor
-          end
-          if col_idx < @columns - 1
-            cell.neighbors << @grid[row_idx - 1][col_idx + 1] # top-right neighbor
-          end
-        end
-        if col_idx > 0
-          cell.neighbors << @grid[row_idx][col_idx - 1]       # left neighbor
-        end
-        if col_idx < @columns - 1
-          cell.neighbors << @grid[row_idx][col_idx + 1]       # right neighbor
-        end
-        if row_idx < @rows - 1
-          cell.neighbors << @grid[row_idx + 1][col_idx]       # bottom neighbor
-          if col_idx > 0
-            cell.neighbors << @grid[row_idx + 1][col_idx - 1] # bottom-left neighbor
-          end
-          if col_idx < @columns - 1
-            cell.neighbors << @grid[row_idx + 1][col_idx + 1] # bottom-right neighbor
-          end
-        end
+        add_top_neighbor          cell, row_idx, col_idx
+        add_top_left_neighbor     cell, row_idx, col_idx
+        add_top_right_neighbor    cell, row_idx, col_idx
+        add_left_neighbor         cell, row_idx, col_idx
+        add_right_neighbor        cell, row_idx, col_idx
+        add_bottom_neighbor       cell, row_idx, col_idx
+        add_bottom_left_neighbor  cell, row_idx, col_idx
+        add_bottom_right_neighbor cell, row_idx, col_idx
       end
     end
 end
@@ -113,6 +129,10 @@ class Cell
 
   def mutate!
     @alive = @next_state
+  end
+
+  def meaning
+    42
   end
 
   private
