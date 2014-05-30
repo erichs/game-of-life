@@ -16,25 +16,34 @@ e.g.: './recently_used.rb 20' will only save 20 items
 Instructions:
 =============
 
-Found on: http://cyber-dojo.org/setup/show/
+Your task is to write a program to calculate the next
+generation of Conway's game of life, given any starting
+position. You start with a two dimensional grid of cells,
+where each cell is either alive or dead. The grid is finite,
+and no life can exist off the edges. When calculating the
+next generation of the grid, follow these four rules:
 
-Develop a recently-used-list class to hold strings
-uniquely in Last-In-First-Out order.
+1. Any live cell with fewer than two live neighbours dies,
+   as if caused by underpopulation.
+2. Any live cell with more than three live neighbours dies,
+   as if by overcrowding.
+3. Any live cell with two or three live neighbours lives
+   on to the next generation.
+4. Any dead cell with exactly three live neighbours becomes
+   a live cell.
 
-o) A recently-used-list is initially empty.
+Examples: * indicates live cell, . indicates dead cell
 
-o) The most recently added item is first, the least
-   recently added item is last.
+Example input: (4 x 8 grid)
+4 8
+........
+....*...
+...**...
+........
 
-o) Items can be looked up by index, which counts from zero.
-
-o) Items in the list are unique, so duplicate insertions
-   are moved rather than added.
-
-Optional extras
-
-o) Null insertions (empty strings) are not allowed.
-
-o) A bounded capacity can be specified, so there is an upper
-   limit to the number of items contained, with the least
-   recently added items dropped on overflow.
+Example output:
+4 8
+........
+...**...
+...**...
+........
