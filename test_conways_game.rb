@@ -41,7 +41,7 @@ describe Cell do
     cell.neighbors.length.must_equal 4
   end
 
-  it "dies with fewer than 2 live neighbors" do
+  it "dies with less than 2 live neighbors" do
     cell = Cell.new('*')
     cell.neighbors << Cell.new('*')
     cell.neighbors << Cell.new('.')
@@ -50,4 +50,39 @@ describe Cell do
     cell.mutate!
     cell.is_alive?.must_equal false
   end
+
+  it "dies with more than 3 live neighbors" do
+    cell = Cell.new('*')
+    cell.neighbors << Cell.new('*')
+    cell.neighbors << Cell.new('*')
+    cell.neighbors << Cell.new('*')
+    cell.neighbors << Cell.new('*')
+    cell.mutate!
+    cell.is_alive?.must_equal false
+  end
+
+  it "lives if 2 or 3 neighbors live" do
+    cell = Cell.new('*')
+    cell.neighbors << Cell.new('*')
+    cell.neighbors << Cell.new('*')
+    cell.neighbors << Cell.new('*')
+    cell.neighbors << Cell.new('.')
+    cell.mutate!
+    cell.is_alive?.must_equal true
+    cell.neighbors.shift
+    cell.mutate!
+    cell.is_alive?.must_equal true
+  end
+
+  it "reanimates with 3 live neighbors" do
+    cell = Cell.new('.')
+    cell.neighbors << Cell.new('*')
+    cell.neighbors << Cell.new('*')
+    cell.neighbors << Cell.new('*')
+    cell.neighbors << Cell.new('.')
+    cell.mutate!
+    cell.is_alive?.must_equal true
+  end
+
+
 end

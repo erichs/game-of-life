@@ -41,23 +41,41 @@ class Cell
   attr_accessor :neighbors
 
   def initialize state
-    @state = state
+    @alive = state == '*'
     @neighbors = []
   end
 
   def is_alive?
-    @state == '*'
+    @alive
   end
 
   def mutate!
-    if is_alive?
-      if num_alive_neighbors < 2
-        @state = '.'
-      end
-    end
+    die_if_underpopulated
+    die_if_overpopulated
+    revive_if_born
   end
 
   private
+    def die!
+      @alive = false
+    end
+
+    def revive!
+      @alive = true
+    end
+
+    def die_if_underpopulated
+      die! if num_alive_neighbors < 2
+    end
+
+    def die_if_overpopulated
+      die! if num_alive_neighbors > 3
+    end
+
+    def revive_if_born
+      revive! if num_alive_neighbors == 3
+    end
+
     def num_alive_neighbors
       neighbors.select{|n| n.is_alive?}.count
     end
