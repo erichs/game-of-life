@@ -50,19 +50,30 @@ class Grid
         end
       end
       grid.each_with_index do |row, row_idx|
-        row.each_with_index do |col, col_idx|
-          cell = grid[row_idx][col_idx]
+        row.each_with_index do |cell, col_idx|
           if row_idx > 0
-            cell.neighbors << grid[row_idx - 1][col_idx]
+            cell.neighbors << grid[row_idx - 1][col_idx]       # top neighbor
+            if col_idx > 0
+              cell.neighbors << grid[row_idx - 1][col_idx - 1] # top-left neighbor
+            end
+            if col_idx < @columns - 1
+              cell.neighbors << grid[row_idx - 1][col_idx + 1] # top-right neighbor
+            end
           end
           if col_idx > 0
-            cell.neighbors << grid[row_idx][col_idx - 1]
+            cell.neighbors << grid[row_idx][col_idx - 1]       # left neighbor
           end
           if col_idx < @columns - 1
-            cell.neighbors << grid[row_idx][col_idx + 1]
+            cell.neighbors << grid[row_idx][col_idx + 1]       # right neighbor
           end
           if row_idx < @rows - 1
-            cell.neighbors << grid[row_idx + 1][col_idx]
+            cell.neighbors << grid[row_idx + 1][col_idx]       # bottom neighbor
+            if col_idx > 0
+              cell.neighbors << grid[row_idx + 1][col_idx - 1] # bottom-left neighbor
+            end
+            if col_idx < @columns - 1
+              cell.neighbors << grid[row_idx + 1][col_idx + 1] # bottom-right neighbor
+            end
           end
         end
       end

@@ -27,7 +27,16 @@ describe Grid do
     grid = Grid.new( 5, 5, 'examples/5_by_5_matrix.txt')
     grid.next!
     disp = grid.display
-    disp.scan(/\*/).count.must_equal 2
+    disp.scan(/\*/).count.must_equal 6
+    grid = Grid.new( 5, 5, 'examples/5_by_5_oscillator.txt')
+    grid.next!
+    disp = grid.display
+    disp.scan(/\*/).count.must_equal 3
+    output = disp.split("\n")
+    output[2][1].must_equal '.'
+    output[2][3].must_equal '.'
+    output[1][2].must_equal '*'
+    output[3][2].must_equal '*'
   end
 end
 
