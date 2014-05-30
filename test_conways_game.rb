@@ -31,4 +31,23 @@ describe Cell do
     cell = Cell.new('*')
     cell.is_alive?.must_equal true
   end
+
+  it "can have neighbors" do
+    cell = Cell.new('*')
+    cell.neighbors << Cell.new('*')
+    cell.neighbors << Cell.new('.')
+    cell.neighbors << Cell.new('*')
+    cell.neighbors << Cell.new('.')
+    cell.neighbors.length.must_equal 4
+  end
+
+  it "dies with fewer than 2 live neighbors" do
+    cell = Cell.new('*')
+    cell.neighbors << Cell.new('*')
+    cell.neighbors << Cell.new('.')
+    cell.neighbors << Cell.new('.')
+    cell.neighbors << Cell.new('.')
+    cell.mutate!
+    cell.is_alive?.must_equal false
+  end
 end

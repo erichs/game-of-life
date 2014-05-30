@@ -38,12 +38,29 @@ class Grid
 end
 
 class Cell
+  attr_accessor :neighbors
+
   def initialize state
     @state = state
+    @neighbors = []
   end
+
   def is_alive?
     @state == '*'
   end
+
+  def mutate!
+    if is_alive?
+      if num_alive_neighbors < 2
+        @state = '.'
+      end
+    end
+  end
+
+  private
+    def num_alive_neighbors
+      neighbors.select{|n| n.is_alive?}.count
+    end
 end
 
 if __FILE__ == $0
