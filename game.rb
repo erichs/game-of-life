@@ -1,10 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'debugger'
-
-class InvalidInput < Exception
-end
-
 class Grid
 
   def initialize columns, rows, file=nil
@@ -95,7 +90,7 @@ class Grid
     end
 
     def introduce_neighbors!
-      each_cell_with_indexes do |cell, row_idx, col_idx|
+      each_cell_with_indexes do  |cell, row_idx, col_idx|
         add_top_neighbor          cell, row_idx, col_idx
         add_top_left_neighbor     cell, row_idx, col_idx
         add_top_right_neighbor    cell, row_idx, col_idx
@@ -159,9 +154,4 @@ class Cell
     def num_alive_neighbors
       neighbors.select{|n| n.is_alive?}.count
     end
-end
-
-if __FILE__ == $0
-  # this will only run if the script was the main, not load'd or require'd
-  puts Grid.new(8,4).display
 end
