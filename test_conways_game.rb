@@ -23,7 +23,12 @@ describe Grid do
     disp.scan(/\*/).count.must_equal 4
   end
 
-  # it "calculates the next generation"
+  it "calculates the next generation" do
+    grid = Grid.new( 5, 5, 'examples/5_by_5_matrix.txt')
+    grid.next!
+    disp = grid.display
+    disp.scan(/\*/).count.must_equal 2
+  end
 end
 
 describe Cell do
@@ -48,6 +53,7 @@ describe Cell do
     cell.neighbors << Cell.new('.')
     cell.neighbors << Cell.new('.')
     cell.mutate!
+    cell.enforce!
     cell.is_alive?.must_equal false
   end
 
@@ -58,6 +64,7 @@ describe Cell do
     cell.neighbors << Cell.new('*')
     cell.neighbors << Cell.new('*')
     cell.mutate!
+    cell.enforce!
     cell.is_alive?.must_equal false
   end
 
@@ -68,9 +75,11 @@ describe Cell do
     cell.neighbors << Cell.new('*')
     cell.neighbors << Cell.new('.')
     cell.mutate!
+    cell.enforce!
     cell.is_alive?.must_equal true
     cell.neighbors.shift
     cell.mutate!
+    cell.enforce!
     cell.is_alive?.must_equal true
   end
 
@@ -81,8 +90,8 @@ describe Cell do
     cell.neighbors << Cell.new('*')
     cell.neighbors << Cell.new('.')
     cell.mutate!
+    cell.enforce!
     cell.is_alive?.must_equal true
   end
-
 
 end

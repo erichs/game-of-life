@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require 'debugger'
+
 class InvalidInput < Exception
 end
 
@@ -13,7 +15,7 @@ class Grid
 
   def display
     [].tap { |output|
-      output << @grid.map{|row| row.join}
+      output << @grid.map{|row| row.map{|cell| (cell.is_alive? ? '*' : '.')}.join}
     }.join("\n")
   end
 
@@ -21,16 +23,47 @@ class Grid
     42
   end
 
+  def next!
+    @grid.each do |row|
+      row.each do |cell|
+        cell.mutate!
+      end
+    end
+
+    @grid.each do |row|
+      row.each do |cell|
+        cell.enforce!
+      end
+    end
+  end
+
   private
     def build_grid file
       grid = []
       if File.exist? file.to_s
         File.read(file).split("\n").each do |row|
-          grid << row.split(//)
+          grid << row.split(//).map{|state| Cell.new(state)}
         end
       else
         @rows.times.each do |row|
-          grid << @columns.times.map {|x| '.'}
+          grid << @columns.times.map {|x| Cell.new('.')}
+        end
+      end
+      grid.each_with_index do |row, row_idx|
+        row.each_with_index do |col, col_idx|
+          cell = grid[row_idx][col_idx]
+          if row_idx > 0
+            cell.neighbors << grid[row_idx - 1][col_idx]
+          end
+          if col_idx > 0
+            cell.neighbors << grid[row_idx][col_idx - 1]
+          end
+          if col_idx < @columns - 1
+            cell.neighbors << grid[row_idx][col_idx + 1]
+          end
+          if row_idx < @rows - 1
+            cell.neighbors << grid[row_idx + 1][col_idx]
+          end
         end
       end
       grid
@@ -38,10 +71,11 @@ class Grid
 end
 
 class Cell
-  attr_accessor :neighbors
+  attr_accessor :neighbors, :next_state
 
   def initialize state
     @alive = state == '*'
+    @next_state = @alive
     @neighbors = []
   end
 
@@ -55,13 +89,17 @@ class Cell
     revive_if_born
   end
 
+  def enforce!
+    @alive = @next_state
+  end
+
   private
     def die!
-      @alive = false
+      @next_state = false
     end
 
     def revive!
-      @alive = true
+      @next_state = true
     end
 
     def die_if_underpopulated
