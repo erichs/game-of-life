@@ -33,6 +33,7 @@ class Grid
 
   private
 
+
     def update_history
       @generation += 1
       output = display
@@ -71,48 +72,25 @@ class Grid
       end
     end
 
-    def add_top_neighbor(cell, row_idx, col_idx)
-      (cell.neighbors << @grid[row_idx - 1][col_idx]) if row_idx > 0
+    def grid_neighbors_of(row, col)
+      [].tap do |neighbors|
+        [ row - 1, row, row + 1 ].each do |neighbor_row|
+          [ col - 1, col, col + 1 ].each do |neighbor_col|
+            next if outside_grid?(neighbor_row, neighbor_col)
+            next if row == neighbor_row and col == neighbor_col
+            neighbors << @grid[neighbor_row][neighbor_col]
+          end
+        end
+      end
     end
 
-    def add_top_left_neighbor(cell, row_idx, col_idx)
-      (cell.neighbors << @grid[row_idx - 1][col_idx - 1]) if row_idx > 0 && col_idx > 0
-    end
-
-    def add_top_right_neighbor(cell, row_idx, col_idx)
-      (cell.neighbors << @grid[row_idx - 1][col_idx + 1]) if row_idx > 0 && col_idx < (@columns - 1)
-    end
-
-    def add_left_neighbor(cell, row_idx, col_idx)
-      (cell.neighbors << @grid[row_idx][col_idx - 1]) if col_idx > 0
-    end
-
-    def add_right_neighbor(cell, row_idx, col_idx)
-      (cell.neighbors << @grid[row_idx][col_idx + 1]) if col_idx < @columns - 1
-    end
-
-    def add_bottom_neighbor(cell, row_idx, col_idx)
-      (cell.neighbors << @grid[row_idx + 1][col_idx]) if row_idx < @rows - 1
-    end
-
-    def add_bottom_right_neighbor(cell, row_idx, col_idx)
-      (cell.neighbors << @grid[row_idx + 1][col_idx + 1]) if row_idx < (@rows - 1) && col_idx < (@columns - 1)
-    end
-
-    def add_bottom_left_neighbor(cell, row_idx, col_idx)
-      (cell.neighbors << @grid[row_idx + 1][col_idx - 1]) if row_idx < (@rows - 1) && col_idx > 0
+    def outside_grid?(row, col)
+      row < 0 || row > (@rows - 1) || col < 0 || col > (@columns - 1)
     end
 
     def introduce_neighbors!
       each_cell_with_indexes do  |cell, row_idx, col_idx|
-        add_top_neighbor          cell, row_idx, col_idx
-        add_top_left_neighbor     cell, row_idx, col_idx
-        add_top_right_neighbor    cell, row_idx, col_idx
-        add_left_neighbor         cell, row_idx, col_idx
-        add_right_neighbor        cell, row_idx, col_idx
-        add_bottom_neighbor       cell, row_idx, col_idx
-        add_bottom_left_neighbor  cell, row_idx, col_idx
-        add_bottom_right_neighbor cell, row_idx, col_idx
+         cell.neighbors = grid_neighbors_of row_idx, col_idx
       end
     end
 end
