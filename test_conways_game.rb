@@ -38,6 +38,15 @@ describe Grid do
     output[1][2].must_equal '*'
     output[3][2].must_equal '*'
   end
+
+  it "fails when output repeats" do
+    grid = Grid.new( 5, 5, 'examples/5_by_5_oscillator.txt')
+    proc {
+      grid.next!
+      grid.next!
+      grid.next!
+    }.must_raise RuntimeError
+  end
 end
 
 describe Cell do

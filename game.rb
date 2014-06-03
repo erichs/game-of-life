@@ -7,6 +7,10 @@ class Grid
     @rows    = rows
     @grid    = populate_from file
     introduce_neighbors!
+    @history = []
+    @max_history_size = 3
+    @history << display
+    @generation = 1
   end
 
   def display
@@ -23,9 +27,19 @@ class Grid
     each_cell do |cell|
       cell.mutate!
     end
+
+    update_history
   end
 
   private
+
+    def update_history
+      @generation += 1
+      output = display
+      fail "Generation #{@generation}, cycle repeats." if @history.include? output
+      @history << output
+      @history.shift if @history.size > @max_history_size
+    end
 
     def populate_from( file )
       [].tap do |grid|
