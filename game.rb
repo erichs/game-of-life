@@ -1,14 +1,15 @@
 #!/usr/bin/env ruby
 
 class Game
-  def initialize(inputfile, silent: false, max_history: 3)
+  def initialize(inputfile, silent: false, max_history: 3, cycle_detection: true)
     @grid = Grid.new(inputfile)
     @history = []
     @max_history_size = max_history
     @history << @grid.display
     @generation = 1
     @silent = silent
-    @delay = @silent ? 0 : 0.05
+    @cycle_detection = cycle_detection
+    @delay = @silent ? 0 : 0.1
 
     trap "SIGINT" do
       game_over!
@@ -20,14 +21,15 @@ class Game
       puts @grid.display unless @silent
       sleep @delay
       @grid.next!
-      update_history
+      update_history if @cycle_detection
     end
   end
 
   private
 
     def game_over!(cycling: false)
-      message = "Generation #{@generation}"
+      message = "STOP"
+      message += ": Generation #{@generation}" if @cycle_detection
       message += ", cycle repeats." if cycling
       fail GameOver, message
     end
@@ -55,7 +57,7 @@ class Grid
 
   def display
     [].tap { |output|
-      output << @grid.map{|row| row.map{|cell| (cell.is_alive? ? '*' : '.')}.join}
+      output << @grid.map{|row| row.map{|cell| (cell.is_alive? ? '@' : '-')}.join}
     }.join("\n")
   end
 
@@ -122,7 +124,7 @@ class Cell
   attr_accessor :neighbors, :next_state
 
   def initialize state
-    @alive = state == '*'
+    @alive = state == '@'
     @next_state = @alive
     @neighbors = []
   end
@@ -174,6 +176,7 @@ end
 class GameOver < Exception; end
 
 if __FILE__ == $0
-  silent = (ARGV[1] && ARGV[1] == '-s') ? true : false
-  Game.new(ARGV[0], silent: silent).run!
+  silent = (ARGV.include? '-s') ? true : false
+  cycles = (ARGV.include? '-C') ? false : true
+  Game.new(ARGV[0], silent: silent, cycle_detection: cycles).run!
 end
