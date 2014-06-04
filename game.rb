@@ -1,16 +1,56 @@
 #!/usr/bin/env ruby
 
+class Game
+  def initialize(inputfile, silent: false, max_history: 3)
+    @grid = Grid.new(inputfile)
+    @history = []
+    @max_history_size = max_history
+    @history << @grid.display
+    @generation = 1
+    @silent = silent
+    @delay = @silent ? 0 : 0.05
+
+    trap "SIGINT" do
+      game_over!
+    end
+  end
+
+  def run!
+    while true
+      puts @grid.display unless @silent
+      sleep @delay
+      @grid.next!
+      update_history
+    end
+  end
+
+  private
+
+    def game_over!(cycling: false)
+      message = "Generation #{@generation}"
+      message += ", cycle repeats." if cycling
+      fail GameOver, message
+    end
+
+    def update_history
+      @generation += 1
+      output = @grid.display
+      game_over!(cycling: true) if @history.include? output
+      @history << output
+      @history.shift if @history.size > @max_history_size
+    end
+end
+
 class Grid
 
-  def initialize columns, rows, file=nil
-    @columns = columns
-    @rows    = rows
-    @grid    = populate_from file
+  def initialize(inputfile=nil)
+    fail "No file? #{inputfile}" unless File.exist? inputfile
+    input = File.read(inputfile).split
+    @rows = input.count
+    @columns = input.first.split(//).count
+    @grid    = populate_from input
     introduce_neighbors!
-    @history = []
-    @max_history_size = 3
-    @history << display
-    @generation = 1
+
   end
 
   def display
@@ -27,31 +67,14 @@ class Grid
     each_cell do |cell|
       cell.mutate!
     end
-
-    update_history
   end
 
   private
 
-
-    def update_history
-      @generation += 1
-      output = display
-      fail "Generation #{@generation}, cycle repeats." if @history.include? output
-      @history << output
-      @history.shift if @history.size > @max_history_size
-    end
-
-    def populate_from( file )
+    def populate_from( input_array )
       [].tap do |grid|
-        if File.exist? file.to_s
-          File.read(file).split("\n").each do |row|
-            grid << row.split(//).map{|state| Cell.new(state)}
-          end
-        else
-          @rows.times.each do |row|
-            grid << @columns.times.map {|x| Cell.new('.')}
-          end
+        input_array.each do |row|
+          grid << row.split(//).map{|state| Cell.new(state)}
         end
       end
     end
@@ -146,4 +169,11 @@ class Cell
     def num_alive_neighbors
       neighbors.select{|n| n.is_alive?}.count
     end
+end
+
+class GameOver < Exception; end
+
+if __FILE__ == $0
+  silent = (ARGV[1] && ARGV[1] == '-s') ? true : false
+  Game.new(ARGV[0], silent: silent).run!
 end

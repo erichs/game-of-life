@@ -6,21 +6,16 @@ To run tests, just type 'rake'
 
 Example Usage:
 ===============
-```ruby
-require './game'
-grid = Grid.new(80,40,'examples/80_by_40.txt')
-50.times.do 
-  grid.next!
-end
-puts grid.display
-```
-
-To watch an animation of the life game, do:
 
 ```shell
-$ ./animate examples/80_by_40.txt
+$ ./game.rb examples/80_by_40.txt
 ```
 
+to run the simulation without display (only show the generation count at game end), use the -s switch:
+
+```shell
+$ ./game.rb examples/80_by_40.txt -s
+```
 Instructions:
 =============
 
