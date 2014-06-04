@@ -16,6 +16,13 @@ to run the simulation without display (only show the generation count at game en
 ```shell
 $ ./game.rb examples/80_by_40.txt -s
 ```
+
+to run the simulation without cycle detection (don't stop if the pattern repeats), use the -C switch:
+
+```shell
+$ ./game.rb examples/80_by_40.txt -C
+```
+
 Instructions:
 =============
 
